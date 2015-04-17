@@ -1,6 +1,6 @@
 #!/bin/bash
 #clear
-echo "--------- Black Hat Includes ---------"
+echo "--------- HTML Injector [START] ---------"
 
 #Initialize variables
 flag_recursive=false
@@ -409,4 +409,4 @@ else
 	echo "        -> 'social' will reference the filename of social.html"
 fi
 echo ""
-echo "--------- Black Hat Includes ---------"
+echo "--------- HTML Injector [START] ---------"
