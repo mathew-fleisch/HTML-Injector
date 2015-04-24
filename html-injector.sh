@@ -3,7 +3,7 @@
 echo "--------- HTML Injector [START] ---------"
 
 #Initialize variables
-IFS=$'\n'
+nl=$'\n'
 flag_recursive=false
 flag_separate=false
 flag_combine=false
@@ -28,7 +28,7 @@ function parse_inject
 		target_file_size=`ls -lah "$target_file" | awk '{ print $5}'` 
 		target_file_lines=`wc -l "$target_file" | sed "s/^\ *//" | sed "s/\ .*$//"`
 		if [ $flag_verbose == true ]; then
-			echo "$IFS   Target File Before: $target_file_size and $target_file_lines lines"
+			echo "$nl   Target File Before: $target_file_size and $target_file_lines lines"
 		fi
 		for next in `cat $target_file`
 		do	
@@ -46,13 +46,13 @@ function parse_inject
 				if [ -f $target_include_file ]; then
 					echo "     Include File: $target_include_file(added)"	
 					incs_found=$((incs_found+1))
-					output_file="$output_file$IFS`cat $target_include_file`"
+					output_file="$output_file$nl`cat $target_include_file`"
 				else 
 					echo " ** Include File does NOT Exist: '$target_include_file' ** "
 					return 1
 				fi
 			else
-				output_file="$output_file$IFS$next"
+				output_file="$output_file$nl$next"
 			fi
 		done
 		echo "$output_file" > $target_file
@@ -69,7 +69,7 @@ function parse_inject
 			echo "---> WARNING: No Includes processed in this file"
 		fi
 	else
-		echo "$IFS ***************   FATAL ERROR!!   ***************"
+		echo "$nl ***************   FATAL ERROR!!   ***************"
 		echo "The target file you specified doesn't appear to be a file..."
 		echo "target file: $target_file"
 		exit 1
@@ -93,9 +93,9 @@ function parse_strip
 		target_file_source=`cat $target_file`
 		target_file_size=`ls -lah "$target_file" | awk '{ print $5}'` 
 		if [ $flag_verbose == true ]; then
-			echo "$IFS   Target File Before: $target_file_size"
+			echo "$nl   Target File Before: $target_file_size"
 		fi
-		IFS=$'\n'
+		nl=$'\n'
 		for next in `cat $target_file`
 		do	
 			if [[ $next =~ ^.*sourceStart.*$ ]]; then
@@ -110,7 +110,7 @@ function parse_strip
 				fi
 
 				if [ $switch == false ];then
-					output_file="$output_file$IFS$next"
+					output_file="$output_file$nl$next"
 				fi
 			fi
 			if [ $switch == true ]; then
@@ -130,7 +130,7 @@ function parse_strip
 			echo "---> WARNING: No Includes processed in this file"
 		fi
 	else
-		echo "$IFS ***************   FATAL ERROR!!   ***************"
+		echo "$nl ***************   FATAL ERROR!!   ***************"
 		echo "The target file you specified doesn't appear to be a file..."
 		echo "target file: $target_file"
 		exit 1
@@ -176,10 +176,10 @@ function parse_directory
 				inject_res=$( parse_inject $flag_verbose $comment_flag $target_file )
 				echo "Inject response: $inject_res"
 			fi
-			echo "$IFS    <>------------<          >------------<>$IFS"
+			echo "$nl    <>------------<          >------------<>$nl"
 		done
 	else
-		echo "$IFS ***************   FATAL ERROR!!   ***************"
+		echo "$nl ***************   FATAL ERROR!!   ***************"
 		echo "The target directory you specified doesn't appear to be a directory..."
 		echo "target directory: $target_directory"
 		exit 1
@@ -225,10 +225,10 @@ function strip_directory
 				strip_res=$( parse_strip $flag_verbose $comment_flag $target_file )
 				echo "Strip response[$target_file]: $strip_res"
 			fi
-			echo "$IFS    <>------------<          >------------<>$IFS"
+			echo "$nl    <>------------<          >------------<>$nl"
 		done
 	else
-		echo "$IFS ***************   FATAL ERROR!!   ***************"
+		echo "$nl ***************   FATAL ERROR!!   ***************"
 		echo "The target directory you specified doesn't appear to be a directory..."
 		echo "target directory: $target_directory"
 		exit 1
@@ -289,7 +289,7 @@ if [[ $flag_combine == true || $flag_separate == true ]]; then
 
 	#Error out if both combine and separate flags are detected
 	if [[ $flag_combine == true && $flag_separate == true ]]; then
-		echo "$IFS ***************   FATAL ERROR!!   ***************"
+		echo "$nl ***************   FATAL ERROR!!   ***************"
 		echo "You must choose only one (combine or separate, not both)..." 1>&2
 		exit 1
 	fi
@@ -301,14 +301,14 @@ if [[ $flag_combine == true || $flag_separate == true ]]; then
 		echo "File Length: $target_file_length       Directory Length: $target_directory_length"
 	fi
 	if [[ $target_file_length -gt 0 && $target_directory_length -gt 0 ]]; then
-		echo "$IFS ***************   FATAL ERROR!!   ***************"
+		echo "$nl ***************   FATAL ERROR!!   ***************"
 		echo "You must either choose to modify a single file or an entire directory, not both." 1>&2
 		exit 1
 	fi
 
 	#Error out if no target file or directory has been defined
 	if [[ $target_file_length == 0 && $target_directory_length == 0 ]]; then
-		echo "$IFS ***************   FATAL ERROR!!   ***************"
+		echo "$nl ***************   FATAL ERROR!!   ***************"
 		echo "You must either choose to modify a single file or an entire directory." 1>&2
 		exit 1
 	fi
@@ -377,7 +377,7 @@ else
 	echo ""
 	echo "-v --verbose   <--------------->   Show more information about what is happening "
 	echo "                                   during script execution"
-	echo "$IFS"
+	echo "$nl"
 	echo "Example Scenario: Social icons get separated out into a file named 'social.html'"
 	echo " --> Within social.html two html comments will be appended to the very first and "
 	echo "     last lines that look like this:"
@@ -394,4 +394,4 @@ else
 	echo "        -> 'inc_' indicates the location of an inject point"
 	echo "        -> 'social' will reference the filename of social.html"
 fi
-echo "$IFS--------- HTML Injector [END] ---------$IFS"
+echo "$nl--------- HTML Injector [END] ---------$nl"
