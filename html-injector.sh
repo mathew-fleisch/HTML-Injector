@@ -1,63 +1,55 @@
 #!/bin/bash
 #clear
 echo "--------- HTML Injector [START] ---------"
+source "config.sh"
 
 #Initialize variables
-nl=$'\n'
+IFS=$'\n'
 flag_recursive=false
-flag_separate=false
-flag_combine=false
+flag_strip=false
+flag_inject=false
 flag_verbose=false
-comment_flag="^.*BLACKHATINCLUDE.*inc_.*$"
-include_path="../includes"
 
 #Declare functions
-function parse_inject
+function parse_inject_file
 {
 	flag_verbose=$1
-	comment_flag=$2
+	regex_match_include=$2
 	target_file=$3
 	target_found=false
 	output_file=""
 	incs_found=0
-	#if [ $flag_verbose == true ]; then
-	#	echo "Function parse_inject(\$flag_verbose = '$flag_verbose', \$comment_flag = '$comment_flag', \$target_file = '$target_file')"
-	#fi
 	if [ -f $target_file ]; then
 		target_file_source=`cat $target_file`
 		target_file_size=`ls -lah "$target_file" | awk '{ print $5}'` 
-		target_file_lines=`wc -l "$target_file" | sed "s/^\ *//" | sed "s/\ .*$//"`
+		target_file_lines=`wc -l "$target_file" | sed "s/$regex_match_leading_spaces//" | sed "s/$regex_match_first_space_to_end//"`
 		if [ $flag_verbose == true ]; then
-			echo "$nl   Target File Before: $target_file_size and $target_file_lines lines"
+			echo "$IFS   Target File Before: $target_file_size and $target_file_lines lines"
 		fi
 		for next in `cat $target_file`
 		do	
-			if [[ $next =~ $comment_flag ]]; then
+			if [[ $next =~ $regex_match_include ]]; then
 				target_found=true
 
-				target_include_file=`echo "$next" | sed "s/^.*inc_//" | sed "s/\ .*$//"`
+				target_include_file=`echo "$next" | sed "s/$regex_match_include_to_filename//" | sed "s/$regex_match_first_space_to_end//"`
 				#echo "$next"
-
-				#if [ $flag_verbose == true ]; then
-				#	echo "     Is this an include file: '$target_include_file.html' ??? ";
-				#fi
 
 				target_include_file="$include_path/$target_include_file.html"
 				if [ -f $target_include_file ]; then
 					echo "     Include File: $target_include_file(added)"	
 					incs_found=$((incs_found+1))
-					output_file="$output_file$nl`cat $target_include_file`"
+					output_file="$output_file$IFS`cat $target_include_file`"
 				else 
 					echo " ** Include File does NOT Exist: '$target_include_file' ** "
 					return 1
 				fi
 			else
-				output_file="$output_file$nl$next"
+				output_file="$output_file$IFS$next"
 			fi
 		done
 		echo "$output_file" > $target_file
 		target_file_size_injected=`ls -lah "$target_file" | awk '{ print $5}'`
-		target_file_lines_injected=`wc -l "$target_file" | sed "s/^\ *//" | sed "s/\ .*$//"`
+		target_file_lines_injected=`wc -l "$target_file" | sed "s/$regex_match_leading_spaces//" | sed "s/$regex_match_first_space_to_end//"`
 		if [ $flag_verbose == true ]; then
 			target_file_lines_diff=`expr $target_file_lines_injected - $target_file_lines`
 			echo "     Lines Added: $target_file_lines_diff"
@@ -69,48 +61,44 @@ function parse_inject
 			echo "---> WARNING: No Includes processed in this file"
 		fi
 	else
-		echo "$nl ***************   FATAL ERROR!!   ***************"
+		echo "$IFS ***************   FATAL ERROR!!   ***************"
 		echo "The target file you specified doesn't appear to be a file..."
 		echo "target file: $target_file"
 		exit 1
 	fi
 }
 
-function parse_strip
+function parse_strip_file
 {
 	flag_verbose=$1
-	comment_flag=$2
+	regex_match_include=$2
 	target_file=$3
 	target_found=false
 	output_file=""
 	switch=false
 	local_count=0
 	incs_found=0
-	#if [ $flag_verbose == true ]; then
-	#	echo "Function parse_strip(\$flag_verbose = '$flag_verbose', \$comment_flag = '$comment_flag', \$target_file = '$target_file')"
-	#fi
 	if [ -f $target_file ]; then
 		target_file_source=`cat $target_file`
 		target_file_size=`ls -lah "$target_file" | awk '{ print $5}'` 
 		if [ $flag_verbose == true ]; then
-			echo "$nl   Target File Before: $target_file_size"
+			echo "$IFS   Target File Before: $target_file_size"
 		fi
-		nl=$'\n'
 		for next in `cat $target_file`
 		do	
-			if [[ $next =~ ^.*sourceStart.*$ ]]; then
+			if [[ $next =~ $regex_match_inc_start ]]; then
 				switch=true
 				incs_found=$((incs_found+1))
 			else
-				if [[ $next =~ ^.*sourceEnd.*$ ]]; then
+				if [[ $next =~ $regex_match_inc_end ]]; then
 					switch=false
-					temp=`echo "$next" | sed "s/^.*sourceEnd_//" | sed "s/\ .*$//"`
-					next="<!-- BLACKHATINCLUDE | inc_$temp -->"
-					echo "     Include File: $include_path/$temp.html(stripped)"
+					temp_filename=`echo "$next" | sed "s/$regex_match_inc_end_to_filename//" | sed "s/$regex_match_first_space_to_end//"`
+					next="<!-- $inc_flag | $inc_filename$temp_filename -->"
+					echo "     Include File: $include_path/$temp_filename.html(stripped)"
 				fi
 
 				if [ $switch == false ];then
-					output_file="$output_file$nl$next"
+					output_file="$output_file$IFS$next"
 				fi
 			fi
 			if [ $switch == true ]; then
@@ -130,25 +118,22 @@ function parse_strip
 			echo "---> WARNING: No Includes processed in this file"
 		fi
 	else
-		echo "$nl ***************   FATAL ERROR!!   ***************"
+		echo "$IFS ***************   FATAL ERROR!!   ***************"
 		echo "The target file you specified doesn't appear to be a file..."
 		echo "target file: $target_file"
 		exit 1
 	fi
 }
 
-function parse_directory
+function parse_inject_directory
 {
 	flag_verbose=$1
-	comment_flag=$2
+	regex_match_include=$2
 	recursive=$3
 	target_directory=$4
 	target_found=false
 	output_file=""
 	incs_found=0
-	#if [ $flag_verbose == true ]; then
-	#	echo "Function parse_directory(\$flag_verbose = '$flag_verbose', \$comment_flag = '$comment_flag', \$recursive = '$recursive', \$target_directory = '$target_directory')"
-	#fi
 	if [ -d $target_directory ]; then
 		echo "Target directory was found: $target_directory"
 		#if [ $target_directory =~ ^/.*$ ]; then
@@ -173,13 +158,13 @@ function parse_directory
 				fi
 			done
 			if [ $tmp_inc_found == false ]; then
-				inject_res=$( parse_inject $flag_verbose $comment_flag $target_file )
+				inject_res=$( parse_inject_file $flag_verbose $regex_match_include $target_file )
 				echo "Inject response: $inject_res"
 			fi
-			echo "$nl    <>------------<          >------------<>$nl"
+			echo "$IFS    <>------------<          >------------<>$IFS"
 		done
 	else
-		echo "$nl ***************   FATAL ERROR!!   ***************"
+		echo "$IFS ***************   FATAL ERROR!!   ***************"
 		echo "The target directory you specified doesn't appear to be a directory..."
 		echo "target directory: $target_directory"
 		exit 1
@@ -187,18 +172,15 @@ function parse_directory
 
 }
 
-function strip_directory
+function parse_strip_directory
 {
 	flag_verbose=$1
-	comment_flag=$2
+	regex_match_include=$2
 	recursive=$3
 	target_directory=$4
 	target_found=false
 	output_file=""
 	incs_found=0
-	#if [ $flag_verbose == true ]; then
-	#	echo "Function strip_directory(\$flag_verbose = '$flag_verbose', \$comment_flag = '$comment_flag', \$recursive = '$recursive', \$target_directory = '$target_directory')"
-	#fi
 	if [ -d $target_directory ]; then
 		echo "Target directory was found: $target_directory"
 		#if [ $target_directory =~ ^/.*$ ]; then
@@ -222,13 +204,13 @@ function strip_directory
 				fi
 			done
 			if [ $tmp_inc_found == false ]; then
-				strip_res=$( parse_strip $flag_verbose $comment_flag $target_file )
+				strip_res=$( parse_strip_file $flag_verbose $regex_match_include $target_file )
 				echo "Strip response[$target_file]: $strip_res"
 			fi
-			echo "$nl    <>------------<          >------------<>$nl"
+			echo "$IFS    <>------------<          >------------<>$IFS"
 		done
 	else
-		echo "$nl ***************   FATAL ERROR!!   ***************"
+		echo "$IFS ***************   FATAL ERROR!!   ***************"
 		echo "The target directory you specified doesn't appear to be a directory..."
 		echo "target directory: $target_directory"
 		exit 1
@@ -242,12 +224,12 @@ while [[ $# > 1 ]]
 do
 key="$1"
 case $key in
-	-c|--combine)
-	flag_combine=true
+	-i|--inject)
+	flag_inject=true
 	shift
 	;;
-	-s|--separate)
-	flag_separate=true
+	-s|--strip)
+	flag_strip=true
 	shift
 	;;
 	-r|--recursive)
@@ -277,20 +259,20 @@ esac
 shift
 done
 
-if [[ $flag_combine == true || $flag_separate == true ]]; then
+if [[ $flag_inject == true || $flag_strip == true ]]; then
 	if [ $flag_verbose == true ]; then
 		echo "   >---------- PARAMETERS ----------<"
-		echo "Combine(true/false):   <------------->   $flag_combine"
-		echo "Separate(true/false):   <------------>   $flag_separate"
+		echo "Inject(true/false):   <------------->   $flag_inject"
+		echo "Strip(true/false):   <------------>   $flag_strip"
 		echo "Recursive(true/false):   <----------->   $flag_recursive"
 		echo "Target Directory(path):   <---------->   $target_directory"
 		echo "Target File(path):   <--------------->   $target_file"
 	fi
 
-	#Error out if both combine and separate flags are detected
-	if [[ $flag_combine == true && $flag_separate == true ]]; then
-		echo "$nl ***************   FATAL ERROR!!   ***************"
-		echo "You must choose only one (combine or separate, not both)..." 1>&2
+	#Error out if both inject and strip flags are detected
+	if [[ $flag_inject == true && $flag_strip == true ]]; then
+		echo "$IFS ***************   FATAL ERROR!!   ***************"
+		echo "You must choose only one (inject or strip, not both)..." 1>&2
 		exit 1
 	fi
 	
@@ -301,14 +283,14 @@ if [[ $flag_combine == true || $flag_separate == true ]]; then
 		echo "File Length: $target_file_length       Directory Length: $target_directory_length"
 	fi
 	if [[ $target_file_length -gt 0 && $target_directory_length -gt 0 ]]; then
-		echo "$nl ***************   FATAL ERROR!!   ***************"
+		echo "$IFS ***************   FATAL ERROR!!   ***************"
 		echo "You must either choose to modify a single file or an entire directory, not both." 1>&2
 		exit 1
 	fi
 
 	#Error out if no target file or directory has been defined
 	if [[ $target_file_length == 0 && $target_directory_length == 0 ]]; then
-		echo "$nl ***************   FATAL ERROR!!   ***************"
+		echo "$IFS ***************   FATAL ERROR!!   ***************"
 		echo "You must either choose to modify a single file or an entire directory." 1>&2
 		exit 1
 	fi
@@ -316,39 +298,39 @@ if [[ $flag_combine == true || $flag_separate == true ]]; then
 	#Passed all logic traps
 	echo "   <>---------- Run Script! ----------<>"
 
-	#Combine/merge include files 
-	if [ $flag_combine == true ]; then
+	#Inject/merge include files 
+	if [ $flag_inject == true ]; then
 		
-		#Run combine on a single file
+		#Run inject on a single file
 		if [ $target_file_length -gt 0 ]; then
-			inject_res=$( parse_inject $flag_verbose $comment_flag $target_file )
+			inject_res=$( parse_inject_file $flag_verbose $regex_match_include $target_file )
 			echo "Inject includes here: $target_file"
 			echo "Inject response: $inject_res"
 		fi
 
 		
-		#Run combine on a directory 
+		#Run inject on a directory 
 		if [ $target_directory_length -gt 0 ]; then
-			inject_res=$( parse_directory $flag_verbose $comment_flag $flag_recursive $target_directory )
+			inject_res=$( parse_inject_directory $flag_verbose $regex_match_include $flag_recursive $target_directory )
 			echo "Inject includes here: $target_directory"
 			echo "Inject response: $inject_res"
 		fi
 
 	fi
 
-	#Separate include files
-	if [ $flag_separate == true ]; then
+	#Strip include files
+	if [ $flag_strip == true ]; then
 
-		#Run separate on a single file
+		#Run strip on a single file
 		if [ $target_file_length -gt 0 ]; then
-			strip_res=$( parse_strip $flag_verbose $comment_flag $target_file )
+			strip_res=$( parse_strip_file $flag_verbose $regex_match_include $target_file )
 			echo "Strip includes here: $target_file"
 			echo "Strip response: $strip_res"
 		fi
 		
-		#Run separate on a directory 
+		#Run strip on a directory 
 		if [ $target_directory_length -gt 0 ]; then
-			strip_res=$( strip_directory $flag_verbose $comment_flag $flag_recursive $target_directory )
+			strip_res=$( parse_strip_directory $flag_verbose $regex_match_include $flag_recursive $target_directory )
 			echo "Strip includes here: $target_directory"
 			echo "Strip response: $strip_res"
 		fi
@@ -356,42 +338,42 @@ if [[ $flag_combine == true || $flag_separate == true ]]; then
 	fi
 	echo "   <>---------- Script Complete! ----------<>"
 else
-	echo "You must choose either to combine or separate files and define a file before this script can run..."
+	echo "You must choose either to inject or strip files and define a file before this script can run..."
 	echo ""
-	echo "-c --combine   <--------------->   This flag is false by default and causes the "
+	echo "-i --inject   <--------------->   This flag is false by default and causes the "
 	echo "                                   includes to be merged with the target file(s)"
 	echo ""
-	echo "-s --separate   <-------------->   This flag is false by default and causes the "
+	echo "-s --strip   <-------------->   This flag is false by default and causes the "
 	echo "                                   include files to be stripped from the target "
 	echo "                                   file(s)"
 	echo ""
 	echo "-r --recursive   <------------->   This flag is false by default and causes the "
-	echo "                                   combine/separate action to be applied to all "
+	echo "                                   inject/strip action to be applied to all "
 	echo "                                   children files starting in the target directory"
 	echo ""
 	echo "-d --target-directory  <------->   This parameter will set a secific directory to "
-	echo "                                   either combine or separate. Note: The recursive"
+	echo "                                   either inject or strip. Note: The recursive"
 	echo "                                   flag is false by default."
-	echo "-f --target-file   <----------->   This parameter will combine or separate include"
+	echo "-f --target-file   <----------->   This parameter will inject or strip include"
 	echo "                                   files into one file"
 	echo ""
 	echo "-v --verbose   <--------------->   Show more information about what is happening "
 	echo "                                   during script execution"
-	echo "$nl"
-	echo "Example Scenario: Social icons get separated out into a file named 'social.html'"
+	echo "$IFS"
+	echo "Example Scenario: Social icons get stripped out into a file named 'social.html'"
 	echo " --> Within social.html two html comments will be appended to the very first and "
 	echo "     last lines that look like this:"
 	echo "              <!-- BLACKHATINCLUDE | sourceStart_social -->"
 	echo "               <!-- BLACKHATINCLUDE | sourceEnd_social -->"
-	echo "        -> 'BLACKHATINCLUDE' indicates to this script where to combine to or separate from"
+	echo "        -> 'BLACKHATINCLUDE' indicates to this script where to inject to or strip from"
 	echo "        -> 'sourceStart_' indicates the start of a template file so that it can be stripped out later"
 	echo "        -> 'sourceEnd_' indicates the end of a template file so that it can be stripped otu later"
 	echo "        -> 'social' will reference the filename of social.html"
 	echo " --> Within the target file(s) (where social.html will be injected into) another "
 	echo "     html comment takes the place of the once static content:"
 	echo "              <!-- BLACKHATINCLUDE | inc_social -->"
-	echo "        -> 'BLACKHATINCLUDE' indicates to this script where to combine to or separate from"
+	echo "        -> 'BLACKHATINCLUDE' indicates to this script where to inject to or strip from"
 	echo "        -> 'inc_' indicates the location of an inject point"
 	echo "        -> 'social' will reference the filename of social.html"
 fi
-echo "$nl--------- HTML Injector [END] ---------$nl"
+echo "$IFS--------- HTML Injector [END] ---------$IFS"
