@@ -10,7 +10,7 @@ flag_recursive=false
 flag_strip=false
 flag_inject=false
 flag_verbose=false
-source "html-injector-functions.sh"
+source "functions.sh"
 
 #Parse command line arguments
 while [[ $# > 1 ]]
