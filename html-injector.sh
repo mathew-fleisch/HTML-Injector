@@ -262,8 +262,8 @@ done
 if [[ $flag_inject == true || $flag_strip == true ]]; then
 	if [ $flag_verbose == true ]; then
 		echo "   >---------- PARAMETERS ----------<"
-		echo "Inject(true/false):   <------------->   $flag_inject"
-		echo "Strip(true/false):   <------------>   $flag_strip"
+		echo "Inject(true/false):   <-------------->   $flag_inject"
+		echo "Strip(true/false):   <--------------->   $flag_strip"
 		echo "Recursive(true/false):   <----------->   $flag_recursive"
 		echo "Target Directory(path):   <---------->   $target_directory"
 		echo "Target File(path):   <--------------->   $target_file"
@@ -340,10 +340,10 @@ if [[ $flag_inject == true || $flag_strip == true ]]; then
 else
 	echo "You must choose either to inject or strip files and define a file before this script can run..."
 	echo ""
-	echo "-i --inject   <--------------->   This flag is false by default and causes the "
+	echo "-i --inject   <---------------->   This flag is false by default and causes the "
 	echo "                                   includes to be merged with the target file(s)"
 	echo ""
-	echo "-s --strip   <-------------->   This flag is false by default and causes the "
+	echo "-s --strip   <----------------->   This flag is false by default and causes the "
 	echo "                                   include files to be stripped from the target "
 	echo "                                   file(s)"
 	echo ""
