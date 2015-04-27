@@ -283,7 +283,7 @@ function retrofit_file
 			if [[ $next =~ $regex_html_footer ]]; then
 				content_toggle=false
 				new_file_contents="$new_file_contents$IFS$footer_contents"
-
+				break 
 			fi
 
 			if [ $content_toggle == true ]; then

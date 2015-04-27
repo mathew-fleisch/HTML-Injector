@@ -1,4 +1,3 @@
-
 #!/bin/bash
 #clear
 echo "--------- HTML Injector [START] ---------"
