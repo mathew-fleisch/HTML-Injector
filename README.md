@@ -7,7 +7,7 @@ This system is designed to simulate php-style includes with html comments and a 
 
 - Open one document to be templatized and start to identify the common code that can be isolated (global css files, event specific css files, navigation, footer, etc)
 
-- Cut and paste each section into a new file (as long as it doesn’t exist already) into the “includes” directory wrapping the first and last lines of the new files with:
+- Cut and paste each section into a new file (as long as it doesn't exist already) into the "includes" directory wrapping the first and last lines of the new files with:
 
 ```
      <!-- BLACKHATINCLUDE | sourceStart_file-name-without-extension -->
@@ -43,13 +43,13 @@ This system is designed to simulate php-style includes with html comments and a 
      /includes/event-YY-template-header-1.html
 ```
 
-- Copy the rest of the html from after the html title tag to the first occurrence of the css class “container” and save:
+- Copy the rest of the html from after the html title tag to the first occurrence of the css class "container" and save:
 
 ```
      /includes/event-YY-template-header-2.html
 ```
 
-- Finally copy the html from css class “footer” to the end of the document and save:
+- Finally copy the html from css class "footer" to the end of the document and save:
 
 ```
      /includes/event-YY-template-footer.html
@@ -61,7 +61,7 @@ This system is designed to simulate php-style includes with html comments and a 
      ./retro-fit.sh -v true -r true -d ../../www.blackhat.com/us-15 -e ../../www.blackhat.com/includes/us-15-template-header-1.html -o ../../www.blackhat.com/includes/us-15-template-header-2.html -t ../../www.blackhat.com/includes/us-15-template-footer.html
 ```
      
-- Now you can run html-injector.sh recursively on the entire directory to complete the conversion. (If the content doesn’t show up or is deleted, revert and make sure the first occurrence of the css class “container” comes before the line number saved in this variable: container_location_before in retro-fit.sh) 
+- Now you can run html-injector.sh recursively on the entire directory to complete the conversion. (If the content doesn't show up or is deleted, revert and make sure the first occurrence of the css class "container" comes before the line number saved in this variable: container_location_before in retro-fit.sh) 
 
 ```
      ./html-injector.sh -v true -r true -d ../www.blackhat.com/us-15/index.html -i true
