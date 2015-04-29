@@ -23,21 +23,24 @@ This system is designed to simulate php-style includes with html comments and a 
      <!-- BLACKHATINCLUDE | inc_file-name-without-extension -->
 ```
 
-- Run the inject command on that one file and verify that the include files have been added back in properly by reloading the page. (open dev console and check for unlinked files)
+- Run the inject command on that one file and verify that the include files have been added back in properly by reloading the page. (open dev console and check for unlinked files) 
 
 **Example:**
+
 ```
      ./html-injector.sh -v true -f ../www.blackhat.com/us-15/index.html -i true
 ```
 
-- If everything is added properly, run the strip command on that same file and open it back up in an editor
+- If everything is added properly, run the strip command on that same file and open it back up in an editor 
 
 **Example:**
+
 ```
      ./html-injector.sh -v true -f ../www.blackhat.com/us-15/index.html -r true -s true
 ```
 
-- Copy html from line 1 through just before the html <title> tag, as the title tag will be preserved in the conversion; save copied html into a new includes file:
+
+- Copy html from line 1 through just before the html &lt;title&gt; tag, as the title tag will be preserved in the conversion; save copied html into a new includes file:
 
 ```
      /includes/event-YY-template-header-1.html
@@ -55,16 +58,18 @@ This system is designed to simulate php-style includes with html comments and a 
      /includes/event-YY-template-footer.html
 ```
 
-- Run the retro-fit.sh program on that target directory while referencing the three template files for that event.
+- Run the retro-fit.sh program on that target directory while referencing the three template files for that event. 
 
 **Example:**
+
 ```
      ./retro-fit.sh -v true -r true -d ../../www.blackhat.com/us-15 -e ../../www.blackhat.com/includes/us-15-template-header-1.html -o ../../www.blackhat.com/includes/us-15-template-header-2.html -t ../../www.blackhat.com/includes/us-15-template-footer.html
 ```
      
-- Now you can run html-injector.sh recursively on the entire directory to complete the conversion. (If the content doesn’t show up or is deleted, revert and make sure the first occurrence of the css class “container” comes before the line number saved in this variable: container_location_before in retro-fit.sh)
+- Now you can run html-injector.sh recursively on the entire directory to complete the conversion. (If the content doesn’t show up or is deleted, revert and make sure the first occurrence of the css class “container” comes before the line number saved in this variable: container_location_before in retro-fit.sh) 
 
 **Example:**
+
 ```
      ./html-injector.sh -v true -r true -d ../www.blackhat.com/us-15/index.html -i true
 ```
@@ -72,19 +77,24 @@ This system is designed to simulate php-style includes with html comments and a 
 
 
 
-## Making changes to template files:
+### Making changes to template files:
 - Open template file and save change. Make sure to leave (or add if missing) the start/end flags
 
-- Run the strip command to pull out old template
+- Run the strip command to pull out old template 
 
 **Example:**
+
 ```
      ./html-injector.sh -v true -r true -d ../www.blackhat.com/us-15/index.html -s true
 ```
 
-- Run the inject command to add new change
+- Run the inject command to add new change 
 
 **Example:**
+
 ```
      ./html-injector.sh -v true -r true -d ../www.blackhat.com/us-15/index.html -i true
 ```
+
+
+
