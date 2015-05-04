@@ -63,9 +63,6 @@ if [[ $flag_inject == true || $flag_strip == true ]]; then
 
 	#Error out if both inject and strip flags are detected
 	if [[ $flag_inject == true && $flag_strip == true ]]; then
-		#echo "$IFS ***************   FATAL ERROR!!   ***************"
-		#echo "You must choose only one (inject or strip, not both)..." 1>&2
-		#exit 1
 		echo "Running \"strip\" and then \"inject\" commands sequentially."
 	fi
 	
@@ -109,6 +106,10 @@ if [[ $flag_inject == true || $flag_strip == true ]]; then
 			echo "Strip response: $strip_res"
 		fi
 
+	fi
+
+	if [[ $flag_inject == true && $flag_strip == true ]]; then
+		echo "$IFS   <>---------- Strip Complete! Injecting HTML Now ----------<>$IFS"
 	fi
 
 	#Inject/merge include files 
