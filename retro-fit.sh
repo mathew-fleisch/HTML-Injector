@@ -24,7 +24,9 @@ regex_html_title_post="<\/title>.*$"
 title_before=10
 regex_html_container="^.*class=\"container\".*$"
 container_location_before=210
-regex_html_footer="^.*class=\"footer\".*$"
+regex_html_right_col="^.*class=\"span-6\ last\ right-col.*$"
+right_col_found=false
+regex_html_footer="^.*class=\"footer.*$"
 
 source "functions.sh"
 
@@ -85,12 +87,12 @@ if [[ $target_directory_length == 0 && $target_file_length == 0 ]]; then
 	echo "                                   the header (up to <title> tag) to the target file/"
 	echo "                                   directory."
 	echo ""
-	echo "-e --header-post-path   <------>   This parameter will set a specific file to override"
+	echo "-o --header-post-path   <------>   This parameter will set a specific file to override"
 	echo "                                   the html from just after <title> tag to first "
 	echo "                                   occurrence of the css class=\"container\""
 	echo "                                   "
 	echo ""
-	echo "-e --footer-path   <----------->   This parameter will set a specific file to override"
+	echo "-t --footer-path   <----------->   This parameter will set a specific file to override"
 	echo "                                   the html from the css class=\"footer\" to the EOF"
 	echo ""
 	echo "-r --recursive   <------------->   This flag is false by default and causes the "
