@@ -19,14 +19,8 @@ flag_recursive=false
 line_number=0
 
 
-regex_html_title_pre="^.*<title>"
-regex_html_title_post="<\/title>.*$"
 title_before=10
-regex_html_container="^.*class=\"container\".*$"
 container_location_before=210
-regex_html_right_col="^.*class=\"span-6\ last\ right-col.*$"
-right_col_found=false
-regex_html_footer="^.*class=\"footer.*$"
 
 source "functions.sh"
 

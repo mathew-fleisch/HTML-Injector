@@ -279,16 +279,7 @@ function retrofit_file
 				content_toggle=true
 			fi
 
-			#regex trigger 3 'class="span-6 last right-col"'
-			#if [[ $next =! $regex_html_right_col ]]; then
-			#	content_toggle=false
-			#	right_col_found=true
-			#	new_file_contents="$new_file_contents$EFS$right_col_footer_contents"
-			#	break
-			#fi
-
-			#regex trigger 4 'class="footer"' right_col_found must be false
-			#if [[ $next =~ $regex_html_footer && $right_col_found == false ]]; then
+			#regex trigger 3 'class="footer"' or 'class="span-6 last right-col"'
 			if [[ $next =~ $regex_html_footer || $next =~ $regex_html_right_col ]]; then
 				content_toggle=false
 				new_file_contents="$new_file_contents$IFS$footer_contents"
