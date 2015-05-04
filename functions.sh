@@ -14,6 +14,14 @@ function parse_inject_file
 		if [ $flag_verbose == true ]; then
 			echo "$IFS   Target File Before: $target_file_size and $target_file_lines lines"
 		fi
+
+		if [[ $target_file_source =~ $regex_match_include ]]; then
+			echo "   Inc Flag Found. Retrofitting..."
+		else
+			echo "   Inc Flag Not Found... Skipping"
+			exit 1
+		fi
+
 		for next in `cat $target_file`
 		do	
 			if [[ $next =~ $regex_match_include ]]; then
@@ -71,6 +79,13 @@ function parse_strip_file
 		target_file_size=`ls -lah "$target_file" | awk '{ print $5}'` 
 		if [ $flag_verbose == true ]; then
 			echo "$IFS   Target File Before: $target_file_size"
+		fi
+
+		if [[ $target_file_source =~ $regex_match_inc_start ]]; then
+			echo "   sourceStart Flag Found. Retrofitting..."
+		else
+			echo "   sourceStart Flag Not Found... Skipping"
+			exit 1
 		fi
 		for next in `cat $target_file`
 		do	
@@ -261,6 +276,14 @@ function retrofit_file
 		if [ $flag_verbose == true ]; then
 			echo "$IFS   Target File Before: $target_file_size and $target_file_lines lines"
 		fi
+	
+		if [[ $target_file_source =~ $regex_match_dwt_file ]]; then
+			echo "   Dreamweaver Template Found. Retrofitting..."
+		else
+			echo "   Dreamweaver Template Not Found... Skipping"
+			exit 1
+		fi
+
 		for next in `cat $target_file`
 		do	
 			line_number=$((line_number+1))
