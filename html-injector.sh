@@ -63,9 +63,10 @@ if [[ $flag_inject == true || $flag_strip == true ]]; then
 
 	#Error out if both inject and strip flags are detected
 	if [[ $flag_inject == true && $flag_strip == true ]]; then
-		echo "$IFS ***************   FATAL ERROR!!   ***************"
-		echo "You must choose only one (inject or strip, not both)..." 1>&2
-		exit 1
+		#echo "$IFS ***************   FATAL ERROR!!   ***************"
+		#echo "You must choose only one (inject or strip, not both)..." 1>&2
+		#exit 1
+		echo "Running \"strip\" and then \"inject\" commands sequentially."
 	fi
 	
 	#Error out if both a target directory and target file have been defined
@@ -74,11 +75,6 @@ if [[ $flag_inject == true || $flag_strip == true ]]; then
 	if [ $flag_verbose == true ]; then
 		echo "File Length: $target_file_length       Directory Length: $target_directory_length"
 	fi
-	if [[ $target_file_length -gt 0 && $target_directory_length -gt 0 ]]; then
-		echo "$IFS ***************   FATAL ERROR!!   ***************"
-		echo "You must either choose to modify a single file or an entire directory, not both." 1>&2
-		exit 1
-	fi
 
 	#Error out if no target file or directory has been defined
 	if [[ $target_file_length == 0 && $target_directory_length == 0 ]]; then
@@ -86,9 +82,34 @@ if [[ $flag_inject == true || $flag_strip == true ]]; then
 		echo "You must either choose to modify a single file or an entire directory." 1>&2
 		exit 1
 	fi
+	if [[ $target_file_length -gt 0 && $target_directory_length -gt 0 ]]; then
+		echo "$IFS ***************   FATAL ERROR!!   ***************"
+		echo "You must either choose to modify a single file or an entire directory, not both." 1>&2
+		exit 1
+	fi
 
 	#Passed all logic traps
 	echo "   <>---------- Run Script! ----------<>"
+
+
+	#Strip include files
+	if [ $flag_strip == true ]; then
+
+		#Run strip on a single file
+		if [ $target_file_length -gt 0 ]; then
+			strip_res=$( parse_strip_file $flag_verbose $regex_match_include $target_file )
+			echo "Strip includes here: $target_file"
+			echo "Strip response: $strip_res"
+		fi
+		
+		#Run strip on a directory 
+		if [ $target_directory_length -gt 0 ]; then
+			strip_res=$( parse_strip_directory $flag_verbose $regex_match_include $flag_recursive $target_directory )
+			echo "Strip includes here: $target_directory"
+			echo "Strip response: $strip_res"
+		fi
+
+	fi
 
 	#Inject/merge include files 
 	if [ $flag_inject == true ]; then
@@ -106,25 +127,6 @@ if [[ $flag_inject == true || $flag_strip == true ]]; then
 			inject_res=$( parse_inject_directory $flag_verbose $regex_match_include $flag_recursive $target_directory )
 			echo "Inject includes here: $target_directory"
 			echo "Inject response: $inject_res"
-		fi
-
-	fi
-
-	#Strip include files
-	if [ $flag_strip == true ]; then
-
-		#Run strip on a single file
-		if [ $target_file_length -gt 0 ]; then
-			strip_res=$( parse_strip_file $flag_verbose $regex_match_include $target_file )
-			echo "Strip includes here: $target_file"
-			echo "Strip response: $strip_res"
-		fi
-		
-		#Run strip on a directory 
-		if [ $target_directory_length -gt 0 ]; then
-			strip_res=$( parse_strip_directory $flag_verbose $regex_match_include $flag_recursive $target_directory )
-			echo "Strip includes here: $target_directory"
-			echo "Strip response: $strip_res"
 		fi
 
 	fi
