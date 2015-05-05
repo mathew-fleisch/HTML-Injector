@@ -54,6 +54,11 @@ case $key in
 	footer_path_length=${#footer_path}
 	shift
 	;;
+	-w|--dwt-path)
+	dwt_path="$2"
+	dwt_path_length=${#dwt_path}
+	shift
+	;;
 	-v|--verbose)
 	flag_verbose=true
 	shift
@@ -89,6 +94,11 @@ if [[ $target_directory_length == 0 && $target_file_length == 0 ]]; then
 	echo "-t --footer-path   <----------->   This parameter will set a specific file to override"
 	echo "                                   the html from the css class=\"footer\" to the EOF"
 	echo ""
+	echo "-w --dwt-path   <-------------->   This parameter will set a specific dreamweaver"
+	echo "                                   template to retrofit. It is necessary becasue"
+	echo "                                   you don't want to recursively apply the wrong"
+	echo "                                   includes templates to all files"
+	echo ""
 	echo "-r --recursive   <------------->   This flag is false by default and causes the "
 	echo "                                   inject/strip action to be applied to all "
 	echo "                                   children files starting in the target directory"
@@ -107,28 +117,30 @@ else
 		echo "Must chose either one file or a directory (optional recursive). Cannot do both, in same command."
 	else
 		if [[ $target_directory_length -gt 0 ]]; then
-			if [[ $header_pre_path_length -gt 0 && $header_post_path_length -gt 0 && $footer_path_length -gt 0 ]]; then
+			if [[ $header_pre_path_length -gt 0 && $header_post_path_length -gt 0 && $footer_path_length -gt 0 && $dwt_path_length ]]; then
 				echo "Target Directory: $target_directory"
-				retrofit_res=$( retrofit_directory $flag_verbose $target_directory $header_pre_path $header_post_path $footer_path $flag_recursive )
+				retrofit_res=$( retrofit_directory $flag_verbose $target_directory $header_pre_path $header_post_path $footer_path $dwt_path $flag_recursive )
 				echo "res: $retrofit_res"
 			else
-				echo "Must have a pre/post header and footer paths defined"
+				echo "Must have a pre/post header and footer paths as well as a dreamweaver template defined"
 				echo "Header Pre Path[$header_pre_path_length]: $header_pre_path"
 				echo "Header Post Path[$header_post_path_length]: $header_post_path"
-				echo "Footer path[$footer_path_length]: $footer_path"
+				echo "Footer Path[$footer_path_length]: $footer_path"
+				echo "Dreamweaver Template Path[$dwt_path_length]: $dwt_path"
 			fi
 		fi
 
 		if [[ $target_file_length -gt 0 ]]; then
-			if [[ $header_pre_path_length -gt 0 && $header_post_path_length -gt 0 && $footer_path_length -gt 0 ]]; then
+			if [[ $header_pre_path_length -gt 0 && $header_post_path_length -gt 0 && $footer_path_length -gt 0 && $dwt_path_length ]]; then
 				echo "Target File: $target_file"
-				retrofit_res=$( retrofit_file $flag_verbose $target_file $header_pre_path $header_post_path $footer_path )
+				retrofit_res=$( retrofit_file $flag_verbose $target_file $header_pre_path $header_post_path $footer_path $dwt_path )
 				echo "res: $retrofit_res"
 			else
 				echo "Must have a pre/post header and footer paths defined"
 				echo "Header Pre Path[$header_pre_path_length]: $header_pre_path"
 				echo "Header Post Path[$header_post_path_length]: $header_post_path"
 				echo "Footer path[$footer_path_length]: $footer_path"
+				echo "Dreamweaver Template Path[$dwt_path_length]: $dwt_path"
 			fi
 		fi
 	fi

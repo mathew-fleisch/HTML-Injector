@@ -230,8 +230,10 @@ function retrofit_file
 	header_pre_path=$3
 	header_post_path=$4
 	footer_path=$5
+	dwt_path=$6
 	main_content=""
 	content_toggle=false
+	dwt_path_is_template=false
 
 
 	#Check that all template files exist
@@ -260,12 +262,20 @@ function retrofit_file
 		all_found=false
 	fi
 
+	if [[ -f $dwt_path && $dwt_path =~ $regex_match_dwt_file ]]; then
+		dwt_path_is_template=true
+		dwt_regex=`echo "$dwt_path" | sed 's/^.*Templates\///' | sed 's/\./\\\./' | sed 's/^/^.*/' | sed 's/$/.*$/'`
+	else
+		echo "Dreamweaver Template Does NOT exist..."
+		all_found=false
+	fi
+
 	if [ $all_found = true ]; then
 		#echo "Template Files exist! Procede..."
 		new_file_contents="$header_pre_contents"
 	else 
 		echo "$IFS ***************   FATAL ERROR!!   ***************"
-		echo "Missing themplate file!"
+		echo "Missing template file!"
 		exit 1
 	fi
 
@@ -277,10 +287,12 @@ function retrofit_file
 			echo "$IFS   Target File Before: $target_file_size and $target_file_lines lines"
 		fi
 	
-		if [[ $target_file_source =~ $regex_match_dwt_file ]]; then
+		if [[ $target_file_source =~ $dwt_regex ]]; then
 			echo "   Dreamweaver Template Found. Retrofitting..."
+			retrofit_success=$((retrofit_success+1))
 		else
 			echo "   Dreamweaver Template Not Found... Skipping"
+			retrofit_failed=$((retrofit_failed+1))
 			exit 1
 		fi
 
@@ -342,7 +354,8 @@ function retrofit_directory
 	header_pre_path=$3
 	header_post_path=$4
 	footer_path=$5
-	recursive=$6
+	dwt_path=$6
+	recursive=$7
 	main_content=""
 	content_toggle=false
 
@@ -373,11 +386,14 @@ function retrofit_directory
 				fi
 			done
 			if [ $tmp_inc_found == false ]; then
-				retrofit_res=$( retrofit_file $flag_verbose $target_file $header_pre_path $header_post_path $footer_path )
+				retrofit_res=$( retrofit_file $flag_verbose $target_file $header_pre_path $header_post_path $footer_path $dwt_path )
 				echo "res: $retrofit_res"
 			fi
 			echo "$IFS    <>------------<          >------------<>$IFS"
 		done
+		echo "Files Retrofitted: $retrofit_success"
+		echo "Skipped Files: $retrofit_failed"
+
 	else
 		echo "$IFS ***************   FATAL ERROR!!   ***************"
 		echo "The target directory you specified doesn't appear to be a directory..."
@@ -386,3 +402,5 @@ function retrofit_directory
 	fi
 
 }
+retrofit_success=0
+retrofit_failed=0
