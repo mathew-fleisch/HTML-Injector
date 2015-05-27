@@ -26,7 +26,7 @@ This system is designed to simulate php-style includes with html comments and a 
      touch /path-to-webroot/scripts/HTML-Injector/excludes_list.txt
 ```
           - Add path to includes folder:  /path-to-webroot/www.blackhat.com/includes
-     - Link exclude_path up in config.sh:
+     - Link exclude_path up in functions.sh:
           - s/Library\/WebServer\/Documents\/blackhat\.com\/scripts\/HTML-Injector/path-to-webroot/g
 
 - Set up /etc/hosts file:
