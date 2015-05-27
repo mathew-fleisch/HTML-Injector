@@ -1,0 +1,80 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Black Hat Includes</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="shortcut icon" href="https://www.blackhat.com/images/favicon.ico" type="image/ico" />
+    <link href="https://www.blackhat.com/css/bh-index.css" rel="stylesheet" type="text/css" /> 
+    <style>
+        .inline-form { display:inline-block; }
+        input { 
+            display:inline-block;
+            cursor: pointer; 
+            padding:3px 12px 3px 12px;
+            color:#fff;
+            border:1px solid #2d97c6;
+            background: rgb(45,151,198); /* Old browsers */
+            background: -moz-linear-gradient(top,  rgba(45,151,198,1) 42%, rgba(38,125,183,1) 51%); /* FF3.6+ */
+            background: -webkit-gradient(linear, left top, left bottom, color-stop(42%,rgba(45,151,198,1)), color-stop(51%,rgba(38,125,183,1))); /* Chrome,Safari4+ */
+            background: -webkit-linear-gradient(top,  rgba(45,151,198,1) 42%,rgba(38,125,183,1) 51%); /* Chrome10+,Safari5.1+ */
+            background: -o-linear-gradient(top,  rgba(45,151,198,1) 42%,rgba(38,125,183,1) 51%); /* Opera 11.10+ */
+            background: -ms-linear-gradient(top,  rgba(45,151,198,1) 42%,rgba(38,125,183,1) 51%); /* IE10+ */
+            background: linear-gradient(to bottom,  rgba(45,151,198,1) 42%,rgba(38,125,183,1) 51%); /* W3C */
+            filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2d97c6', endColorstr='#267db7',GradientType=0 ); /* IE6-9 */
+            
+            
+            
+            
+            font-size:12px;
+            text-shadow: 2px 2px 2px #15121d;
+            -moz-border-radius: 5px;
+            border-radius: 5px;
+            margin-bottom:15px;
+        }
+        input:hover { 
+            background: rgb(38,125,183); /* Old browsers */
+            background: -moz-linear-gradient(top,  rgba(38,125,183,1) 46%, rgba(45,151,198,1) 52%); /* FF3.6+ */
+            background: -webkit-gradient(linear, left top, left bottom, color-stop(46%,rgba(38,125,183,1)), color-stop(52%,rgba(45,151,198,1))); /* Chrome,Safari4+ */
+            background: -webkit-linear-gradient(top,  rgba(38,125,183,1) 46%,rgba(45,151,198,1) 52%); /* Chrome10+,Safari5.1+ */
+            background: -o-linear-gradient(top,  rgba(38,125,183,1) 46%,rgba(45,151,198,1) 52%); /* Opera 11.10+ */
+            background: -ms-linear-gradient(top,  rgba(38,125,183,1) 46%,rgba(45,151,198,1) 52%); /* IE10+ */
+            background: linear-gradient(to bottom,  rgba(38,125,183,1) 46%,rgba(45,151,198,1) 52%); /* W3C */
+            filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#267db7', endColorstr='#2d97c6',GradientType=0 ); /* IE6-9 */
+            text-decoration:none;
+        }
+    </style>
+</head>
+ 
+<body> 
+    <center>
+        <div id="container">
+            <div id="header">
+                <a href="index.html"><img src="https://www.blackhat.com/images/pixel.gif" width="600" height="140" /></a>
+            </div>
+            <h1>Black Hat Includes System</h1>
+            <br />
+            <form action="process.cgi" method="get">
+            <p>
+                <h2>Black Hat Magic:</h2>
+                Action:
+                <select name="action">
+                    <option value="strip">Strip</option>
+                    <option value="inject">Inject</option>
+                    <option value="stripinject" selected>Strip/Inject</option>
+                </select>
+                <select name="target">
+                    <option value="eu-15">Europe 2015</option>
+                    <option value="exec-15">Executive Summit 2015</option>
+                    <option value="ldn-15">London 2015</option>
+                    <option value="sp-15">Sao Paulo 2015</option>
+                    <option value="us-15">USA 2015</option>
+		    <option value="." selected>Webroot + Events(warning: takes a long time ~ 3-5min)</option>
+                </select>
+                <input type="submit" value="Do magic!" />
+            </p>
+            </form>
+            <hr />
+        </div>
+    </center>
+</body>
+</html>

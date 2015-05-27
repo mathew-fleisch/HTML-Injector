@@ -1,0 +1,13 @@
+#!/bin/bash
+echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />"
+echo "<link rel=\"shortcut icon\" href=\"https://www.blackhat.com/images/favicon.ico\" type=\"image/ico\" />"
+echo "<link href=\"https://www.blackhat.com/css/bh-index.css\" rel=\"stylesheet\" type=\"text/css\" />"
+echo "<style>.output_box { color: #00ff00; border: 1px solid #00ff00; background-color: #000; font-family: courier,monoco; text-align: left; width: auto; font-size: 11px; padding: 10px; overflow:scroll; } </style>"
+echo "</head>"
+echo "<body>"
+echo "<center>"
+echo "<div id=\"container\">"
+echo "<div id=\"header\">"
+echo "<a href=\"index.html\"><img src=\"https://www.blackhat.com/images/pixel.gif\" width=\"600\" height=\"140\" /></a>"
+echo "</div>"
+#echo "<a href=\"index.html\">Back</a><br />"

@@ -1,6 +1,66 @@
 # Black Hat Includes System
 This system is designed to simulate php-style includes with html comments and a shell script to strip old and inject new content. The script is run manually or only when content is updated so that the front-end can remain html only. 
 
+## Installation:
+
+- First replace "/path-to-webroot" with your local clone of the black hat site in this document.
+
+
+- Set up permissions for local html files:
+```
+     sudo chgrp -R _www /path-to-webroot/www.blackhat.com; sudo chmod -R g+w /path-to-webroot/www.blackhat.com
+```
+
+- Set up container for scripts to run:
+     - If your html files are here: "/path-to-webroot/www.blackhat.com"
+     - Then you should make a "scripts" folder here: "/path-to-webroot/scripts"
+
+- Clone the html-injector tool:
+```
+     cd /path-to-webroot/scripts;
+     git clone https://github.com/mathew-fleisch/HTML-Injector.git .;
+```
+
+- Create Excludes List (important, or will strip template source files):
+```
+     touch /path-to-webroot/scripts/HTML-Injector/excludes_list.txt
+```
+          - Add path to includes folder:  /path-to-webroot/www.blackhat.com/includes
+     - Link exclude_path up in config.sh:
+          - s/Library\/WebServer\/Documents\/blackhat\.com\/scripts\/HTML-Injector/path-to-webroot/g
+
+- Set up /etc/hosts file:
+```
+     # Custom domains:
+     127.0.0.1  localhost
+     127.0.0.1  blackhat.local
+     127.0.0.1  htmlinjector.local
+```
+
+- Set up Vhosts and enable CGI for front-end script:
+     - /etc/apache2/extra/httpd-vhosts.conf
+```
+          <VirtualHost *:80>
+                  DocumentRoot "/path-to-webroot/www.blackhat.com"
+                  ServerName blackhat.local
+          </VirtualHost>
+          <VirtualHost *:80>
+                  DocumentRoot "/path-to-webroot/scripts/HTML-Injector"
+                  ServerName htmlinjector.local
+                  Options Indexes FollowSymLinks ExecCGI
+                  AddHandler cgi-script .cgi .pl
+          </VirtualHost>
+```
+     - /etc/apache2/httpd.conf
+```
+          LoadModule cgi_module libexec/apache2/mod_cgi.so
+````
+
+- Restart Apache:
+```
+     sudo httpd -k restart
+```
+
 ## Templatizing Existing HTML Pages:
 
 - First make a zip/copy of the directory, for easy revert and debugging

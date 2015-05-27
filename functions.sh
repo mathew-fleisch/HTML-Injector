@@ -1,4 +1,5 @@
 #!/bin/bash
+exclude_path="/Library/WebServer/Documents/blackhat.com/scripts/HTML-Injector/excludes_list.txt"
 function parse_inject_file
 {
 	flag_verbose=$1
@@ -16,6 +17,16 @@ function parse_inject_file
 		fi
 
 		if [[ $target_file_source =~ $regex_match_include ]]; then
+			excluded=false
+			for ex_path in `cat $exclude_path`
+			do
+				tmp_path="^`echo $ex_path | sed 's@\.@\\\.@g' | sed 's@\/@\\\/@g'`.*$"
+				if [[ $target_file =~ $tmp_path ]]; then
+					excluded=true
+					echo "Exclude Path Matched: $ex_path"
+					exit 1
+				fi
+			done
 			echo "   Inc Flag Found. Retrofitting..."
 		else
 			echo "   Inc Flag Not Found... Skipping"
@@ -82,6 +93,16 @@ function parse_strip_file
 		fi
 
 		if [[ $target_file_source =~ $regex_match_inc_start ]]; then
+			excluded=false
+			for ex_path in `cat $exclude_path`
+			do
+				tmp_path="^`echo $ex_path | sed 's@\.@\\\.@g' | sed 's@\/@\\\/@g'`.*$"
+				if [[ $target_file =~ $tmp_path ]]; then
+					excluded=true
+					echo "Exclude Path Matched: $ex_path"
+					exit 1
+				fi
+			done
 			echo "   sourceStart Flag Found. Retrofitting..."
 		else
 			echo "   sourceStart Flag Not Found... Skipping"
@@ -101,7 +122,14 @@ function parse_strip_file
 				fi
 
 				if [ $switch == false ];then
-					output_file="$output_file$IFS$next"
+					if [[ $next =~ ^.*InstanceBeginEditable\ name=\"indexBody\".*$ ]]; then
+						echo "Skipping old dreamweaver comment"
+					else 
+						#^.*InstanceEndEditable.*$
+						#tmp_path="^`echo $ex_path | sed 's@\.@\\\.@g' | sed 's@\/@\\\/@g'`.*$"
+						next="`echo $next | sed 's/<\!--\ InstanceEndEditable\ -->//g'`"
+						output_file="$output_file$IFS$next"
+					fi
 				fi
 			fi
 			if [ $switch == true ]; then
@@ -150,19 +178,30 @@ function parse_inject_directory
 		for target_file in `find "$target_directory" -name '*.html' $cmd_inc`
 		do
 			echo "File Found: $target_file"	
-			#echo "Inject includes here: $target_file"
-			#echo "Includes Path: $include_path"
-			tmp_inc_found=false
-			for test_include in `find "$include_path" -name '*.html'`
+			excluded=false
+			for ex_path in `cat $exclude_path`
 			do
-				if [ $target_file == $test_include ]; then
-					echo "Skip stripping source include: $target_file"
-					tmp_inc_found=true
+				tmp_path="^`echo $ex_path | sed 's@\.@\\\.@g' | sed 's@\/@\\\/@g'`.*$"
+				if [[ $target_file =~ $tmp_path ]]; then
+					excluded=true
+					echo "Exclude Path Matched: $ex_path"
 				fi
 			done
-			if [ $tmp_inc_found == false ]; then
-				inject_res=$( parse_inject_file $flag_verbose $regex_match_include $target_file )
-				echo "Inject response: $inject_res"
+			if [ $excluded == true ]; then 
+				echo "Skipping..."
+			else
+				tmp_inc_found=false
+				for test_include in `find "$include_path" -name '*.html'`
+				do
+					if [ $target_file == $test_include ]; then
+						echo "Skip injecting source include: $target_file"
+						tmp_inc_found=true
+					fi
+				done
+				if [ $tmp_inc_found == false ]; then
+					inject_res=$( parse_inject_file $flag_verbose $regex_match_include $target_file )
+					echo "Inject response: $inject_res"
+				fi
 			fi
 			echo "$IFS    <>------------<          >------------<>$IFS"
 		done
@@ -184,6 +223,7 @@ function parse_strip_directory
 	target_found=false
 	output_file=""
 	incs_found=0
+	target_directory="`echo $target_directory | sed 's/\/\.\s*$//g'`"
 	if [ -d $target_directory ]; then
 		echo "Target directory was found: $target_directory"
 		#if [ $target_directory =~ ^/.*$ ]; then
@@ -197,18 +237,31 @@ function parse_strip_directory
 		for target_file in `find "$target_directory" -name '*.html' $cmd_inc`
 		do
 			echo "File Found: $target_file"	
-			#echo "Strip includes here: $target_file"
-			tmp_inc_found=false
-			for test_include in `find "$include_path" -name '*.html'`
+			excluded=false
+			for ex_path in `cat $exclude_path`
 			do
-				if [ $target_file == $test_include ]; then
-					echo "Skip stripping source include: $target_file"
-					tmp_inc_found=true
+				tmp_path="^`echo $ex_path | sed 's@\.@\\\.@g' | sed 's@\/@\\\/@g'`.*$"
+				if [[ $target_file =~ $tmp_path ]]; then
+					excluded=true
+					echo "Exclude Path Matched: $ex_path"
 				fi
 			done
-			if [ $tmp_inc_found == false ]; then
-				strip_res=$( parse_strip_file $flag_verbose $regex_match_include $target_file )
-				echo "Strip response[$target_file]: $strip_res"
+			if [ $excluded == true ]; then 
+				echo "Exclude Path Matched. Skipping..."
+			else
+				#echo "Strip includes here: $target_file"
+				tmp_inc_found=false
+				for test_include in `find "$include_path" -name '*.html'`
+				do
+					if [ $target_file == $test_include ]; then
+						echo "Skip stripping source include: $target_file"
+						tmp_inc_found=true
+					fi
+				done
+				if [ $tmp_inc_found == false ]; then
+					strip_res=$( parse_strip_file $flag_verbose $regex_match_include $target_file )
+					echo "Strip response[$target_file]: $strip_res"
+				fi
 			fi
 			echo "$IFS    <>------------<          >------------<>$IFS"
 		done
@@ -381,7 +434,7 @@ function retrofit_directory
 			for test_include in `find "$include_path" -name '*.html'`
 			do
 				if [ $target_file == $test_include ]; then
-					echo "Skip stripping source include: $target_file"
+					echo "Skip retrofitting source include: $target_file"
 					tmp_inc_found=true
 				fi
 			done
