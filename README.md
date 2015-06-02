@@ -21,14 +21,6 @@ This system is designed to simulate php-style includes with html comments and a 
      git clone https://github.com/mathew-fleisch/HTML-Injector.git .;
 ```
 
-- Create Excludes List (important, or will strip template source files):
-```
-     touch /path-to-webroot/scripts/HTML-Injector/excludes_list.txt
-```
-          - Add path to includes folder:  /path-to-webroot/www.blackhat.com/includes
-     - Link exclude_path up in functions.sh:
-          - s/Library\/WebServer\/Documents\/blackhat\.com\/scripts\/HTML-Injector/path-to-webroot/g
-
 - Set up /etc/hosts file:
 ```
      # Custom domains:
