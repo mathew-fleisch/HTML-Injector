@@ -1,5 +1,12 @@
 #!/bin/bash
-exclude_path="/Library/WebServer/Documents/blackhat.com/scripts/HTML-Injector/excludes_list.txt"
+abspath() {                                   
+    OLDPWD="`pwd`"
+    cd "$(dirname "$1")"
+    printf "%s/%s\n" "$(pwd)" "$(basename "$1")"
+    cd "$OLDPWD"
+}
+abs_include_path=$( abspath $include_path )
+#echo "$abs_include_path"
 function parse_inject_file
 {
 	flag_verbose=$1
@@ -17,16 +24,10 @@ function parse_inject_file
 		fi
 
 		if [[ $target_file_source =~ $regex_match_include ]]; then
-			excluded=false
-			for ex_path in `cat $exclude_path`
-			do
-				tmp_path="^`echo $ex_path | sed 's@\.@\\\.@g' | sed 's@\/@\\\/@g'`.*$"
-				if [[ $target_file =~ $tmp_path ]]; then
-					excluded=true
-					echo "Exclude Path Matched: $ex_path"
-					exit 1
-				fi
-			done
+			if [[ $abs_include_path =~ $target_file_source ]]; then
+				echo "Exclude Path Matched: $target_file_source"
+				exit 1
+			fi
 			echo "   Inc Flag Found. Retrofitting..."
 		else
 			echo "   Inc Flag Not Found... Skipping"
@@ -93,16 +94,14 @@ function parse_strip_file
 		fi
 
 		if [[ $target_file_source =~ $regex_match_inc_start ]]; then
-			excluded=false
-			for ex_path in `cat $exclude_path`
-			do
-				tmp_path="^`echo $ex_path | sed 's@\.@\\\.@g' | sed 's@\/@\\\/@g'`.*$"
-				if [[ $target_file =~ $tmp_path ]]; then
-					excluded=true
-					echo "Exclude Path Matched: $ex_path"
-					exit 1
-				fi
-			done
+			abs_target_path=$( abspath $target_file )
+			echo "Target File Source:    '$target_file'"
+			echo "Absolute Target File:  '$abs_target_file'"
+			echo "Absolute Include Path: '$abs_include_path'"
+			if [[ $abs_include_path =~ $target_file || $abs_include_path =~ $abs_target_file ]]; then
+				echo "Exclude Path Matched: $target_file"
+				exit 1
+			fi
 			echo "   sourceStart Flag Found. Retrofitting..."
 		else
 			echo "   sourceStart Flag Not Found... Skipping"
@@ -122,14 +121,14 @@ function parse_strip_file
 				fi
 
 				if [ $switch == false ];then
-					if [[ $next =~ ^.*InstanceBeginEditable\ name=\"indexBody\".*$ ]]; then
-						echo "Skipping old dreamweaver comment"
-					else 
+					#if [[ $next =~ ^.*InstanceBeginEditable\ name=\"indexBody\".*$ ]]; then
+					#	echo "Skipping old dreamweaver comment"
+					#else 
 						#^.*InstanceEndEditable.*$
 						#tmp_path="^`echo $ex_path | sed 's@\.@\\\.@g' | sed 's@\/@\\\/@g'`.*$"
-						next="`echo $next | sed 's/<\!--\ InstanceEndEditable\ -->//g'`"
+						#next="`echo $next | sed 's/<\!--\ InstanceEndEditable\ -->//g'`"
 						output_file="$output_file$IFS$next"
-					fi
+					#fi
 				fi
 			fi
 			if [ $switch == true ]; then
@@ -150,7 +149,7 @@ function parse_strip_file
 		fi
 	else
 		echo "$IFS ***************   FATAL ERROR!!   ***************"
-		echo "The target file you specified doesn't appear to be a file..."
+		echo "The target file you specified doesnt appear to be a file..."
 		echo "target file: $target_file"
 		exit 1
 	fi
@@ -165,11 +164,10 @@ function parse_inject_directory
 	target_found=false
 	output_file=""
 	incs_found=0
+	target_directory=`echo "$target_directory" | sed -e 's/\/\.$//g'`
 	if [ -d $target_directory ]; then
+		echo ""
 		echo "Target directory was found: $target_directory"
-		#if [ $target_directory =~ ^/.*$ ]; then
-		#echo "$(cd $target_directory; pwd)/."
-		#fi
 		echo "    <>------------<          >------------<>"
 		cmd_inc=""
 		if [ $recursive == false ]; then 
@@ -177,16 +175,12 @@ function parse_inject_directory
 		fi
 		for target_file in `find "$target_directory" -name '*.html' $cmd_inc`
 		do
-			echo "File Found: $target_file"	
 			excluded=false
-			for ex_path in `cat $exclude_path`
-			do
-				tmp_path="^`echo $ex_path | sed 's@\.@\\\.@g' | sed 's@\/@\\\/@g'`.*$"
-				if [[ $target_file =~ $tmp_path ]]; then
-					excluded=true
-					echo "Exclude Path Matched: $ex_path"
-				fi
-			done
+			echo "File Found: $target_file"	
+			if [[ $abs_include_path =~ $target_file ]]; then
+				echo "Exclude Path Matched: $target_file"
+				excluded=true
+			fi
 			if [ $excluded == true ]; then 
 				echo "Skipping..."
 			else
@@ -223,12 +217,9 @@ function parse_strip_directory
 	target_found=false
 	output_file=""
 	incs_found=0
-	target_directory="`echo $target_directory | sed 's/\/\.\s*$//g'`"
+	target_directory=`echo "$target_directory" | sed -e 's/\/\.$//g'`
 	if [ -d $target_directory ]; then
 		echo "Target directory was found: $target_directory"
-		#if [ $target_directory =~ ^/.*$ ]; then
-		#echo "$(cd $target_directory; pwd)/."
-		#fi
 		echo "    <>------------<          >------------<>"
 		cmd_inc=""
 		if [ $recursive == false ]; then 
@@ -236,16 +227,12 @@ function parse_strip_directory
 		fi
 		for target_file in `find "$target_directory" -name '*.html' $cmd_inc`
 		do
-			echo "File Found: $target_file"	
 			excluded=false
-			for ex_path in `cat $exclude_path`
-			do
-				tmp_path="^`echo $ex_path | sed 's@\.@\\\.@g' | sed 's@\/@\\\/@g'`.*$"
-				if [[ $target_file =~ $tmp_path ]]; then
-					excluded=true
-					echo "Exclude Path Matched: $ex_path"
-				fi
-			done
+			echo "File Found: $target_file"	
+			if [[ $abs_include_path =~ $target_directory ]]; then
+				echo "Exclude Path Matched: $target_directory"
+				excluded=true
+			fi
 			if [ $excluded == true ]; then 
 				echo "Exclude Path Matched. Skipping..."
 			else
